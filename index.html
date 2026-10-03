@@ -1,25 +1,29 @@
-WhatsApp Blast Dashboard
-Contacts0
-Selected0
-Sent0
-Failed0
-📊 Contact List
-Upload CSV
-CSV: Name,Phone
-Manual number
-+ Add
-Clear
-#	Phone	Status
-💬 Template Campaign
-ProjectReal Estate ProjectProject 2Project 3Meta Template NameLanguageEnglish (US)EnglishMarathiHindiBody variables (one per line)Optional image URLInternal campaign note
-Template: realestate_project
-I confirm these contacts have opted in / requested WhatsApp communication.
-Test First ContactSend Campaign
-Ready
-Uses approved Meta templates and does not bypass WhatsApp rules.
-💬 Live Chat
-🔄 Refresh Chats
-Select a client
-No conversation selected.
-Send
-
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WhatsApp Blast Dashboard</title><style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#f4f7fb;color:#172033}.header{background:#075e54;color:white;padding:18px 24px;font-size:24px;font-weight:bold}.wrap{max-width:1200px;margin:20px auto;padding:0 15px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card{background:white;padding:18px;border-radius:12px;box-shadow:0 3px 12px #0001;margin-bottom:18px}label{display:block;font-weight:bold;margin:10px 0 5px}input,textarea,select{width:100%;padding:11px;border:1px solid #ccd3dc;border-radius:8px;font-size:15px}textarea{min-height:120px}button{padding:11px 16px;border:0;border-radius:8px;font-weight:bold;cursor:pointer;margin-top:9px}.primary{background:#075e54;color:#fff}.secondary{background:#e8eef5}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}.stat{background:#fff;padding:14px;text-align:center;border-radius:10px}.stat b{display:block;font-size:24px;margin-top:4px}.preview,.status{padding:12px;background:#eef7f1;border-radius:8px;margin-top:10px;white-space:pre-wrap}.note{font-size:12px;color:#667085;margin-top:6px}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}.chat{margin-top:0}.chatgrid{display:grid;grid-template-columns:300px 1fr;min-height:500px}.list{border-right:1px solid #eee;overflow:auto}.contact{padding:13px;border-bottom:1px solid #eee;cursor:pointer}.contact.active{background:#e8f5f2}.messages{padding:18px;background:#eef5f1;min-height:360px;max-height:430px;overflow:auto}.msg{max-width:75%;padding:10px;margin:0 0 10px;border-radius:10px;white-space:pre-wrap}.client{background:white}.agent{background:#d9fdd3;margin-left:auto}.reply{display:flex;gap:8px;padding:10px;border-top:1px solid #ddd}.reply textarea{height:55px;min-height:55px}.reply button{margin-top:0}@media(max-width:800px){.grid,.chatgrid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.list{border-right:0;max-height:220px}}
+</style></head><body>
+<div class="header">WhatsApp Blast Dashboard</div><div class="wrap">
+<div class="stats"><div class="stat">Contacts<b id="total">0</b></div><div class="stat">Selected<b id="selected">0</b></div><div class="stat">Sent<b id="sent">0</b></div><div class="stat">Failed<b id="failed">0</b></div></div>
+<div class="grid">
+<div class="card"><h2>📊 Contact List</h2><label>Upload CSV</label><input type="file" id="csv" accept=".csv"><div class="note">CSV: Name,Phone</div><label>Manual number</label><div class="row"><input id="phone" placeholder="919876543210"><button class="secondary" onclick="add()">+ Add</button></div><button class="secondary" onclick="clearAll()">Clear</button><table><thead><tr><th>#</th><th>Phone</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="card"><h2>💬 Template Campaign</h2><label>Project</label><select id="project"><option>Real Estate Project</option><option>Project 2</option><option>Project 3</option></select><label>Meta Template Name</label><input id="template" value="realestate_project"><label>Language</label><select id="lang"><option value="en_US">English (US)</option><option value="en">English</option><option value="mr">Marathi</option><option value="hi">Hindi</option></select><label>Body variables (one per line)</label><textarea id="vars" placeholder="Value 1&#10;Value 2"></textarea><label>Optional image URL</label><input id="image" placeholder="https://..."><label>Internal campaign note</label><textarea id="note" placeholder="Campaign note"></textarea><div class="preview" id="preview">Template: realestate_project</div><label><input id="consent" type="checkbox" style="width:auto"> I confirm these contacts have opted in / requested WhatsApp communication.</label><div class="row"><button class="primary" onclick="test()">Test First Contact</button><button class="primary" onclick="blast()">Send Campaign</button></div><div class="status" id="status">Ready</div><div class="note">Uses approved Meta templates and does not bypass WhatsApp rules.</div></div></div>
+<div class="card chat"><h2>💬 Live Chat</h2><button class="secondary" onclick="loadChats()">🔄 Refresh Chats</button><div class="chatgrid"><div class="list"><input id="search" placeholder="Search client" oninput="renderChats()"><div id="chatlist"></div></div><div><div style="padding:14px;font-weight:bold" id="head">Select a client</div><div class="messages" id="msgs">No conversation selected.</div><div class="reply"><textarea id="reply" placeholder="Type reply..."></textarea><button class="primary" onclick="reply()">Send</button></div></div></div></div>
+</div><script>
+const API_URL="https://ak-properties-whatsapp-api.akproperties0508.workers.dev/";let contacts=[],chats=[],active=-1,sent=0,failed=0;
+const $=id=>document.getElementById(id), clean=x=>String(x||"").replace(/\D/g,"");
+function stats(){$("total").innerText=contacts.length;$("selected").innerText=contacts.length;$("sent").innerText=sent;$("failed").innerText=failed}
+function render(){ $("rows").innerHTML=contacts.map((p,i)=>`<tr><td>${i+1}</td><td>${p}</td><td>Ready</td></tr>`).join("");stats()}
+function add(){let p=clean($("phone").value);if(!p)return alert("Enter a number");if(!contacts.includes(p))contacts.push(p);$("phone").value="";render()}
+function clearAll(){contacts=[];render()}
+$("csv").onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=x=>{contacts=[];x.target.result.split(/\r?\n/).forEach((l,i)=>{if(i==0&&/phone/i.test(l))return;let a=l.split(","),p=clean(a.length>1?a[1]:a[0]);if(p&&!contacts.includes(p))contacts.push(p)});render()};r.readAsText(f)}
+$("template").oninput=()=>{$("preview").innerText="Template: "+$("template").value.trim()}
+function payload(phone){let p={to:phone,templateName:$("template").value.trim(),language:$("lang").value};let v=$("vars").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);if(v.length)p.variables=v;let im=$("image").value.trim();if(im)p.imageUrl=im;return p}
+async function sendOne(phone){let r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload(phone))}),j=await r.json();if(!r.ok)throw Error(JSON.stringify(j));return j}
+async function test(){if(!contacts.length)return alert("Add a contact");if(!$("consent").checked)return alert("Confirm opt-in first");$("status").innerText="Sending test...";try{let j=await sendOne(contacts[0]);sent++;stats();$("status").innerText="Meta accepted request.\n"+JSON.stringify(j,null,2)}catch(e){failed++;stats();$("status").innerText="Failed:\n"+e.message}}
+async function blast(){if(!contacts.length)return alert("Add contacts");if(!$("consent").checked)return alert("Confirm opt-in first");if(!confirm("Send approved template to "+contacts.length+" contacts?"))return;let s=0,f=0;for(let i=0;i<contacts.length;i++){ $("status").innerText=`Sending ${i+1}/${contacts.length}...`;try{await sendOne(contacts[i]);s++}catch(e){f++}await new Promise(r=>setTimeout(r,700))}sent+=s;failed+=f;stats();$("status").innerText=`Finished. API accepted: ${s}\nFailed: ${f}\nAcceptance is not the same as delivery.`}
+async function loadChats(){try{let r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"get_chats"})}),j=await r.json();if(!r.ok)throw Error(JSON.stringify(j));chats=j.chats||[];renderChats()}catch(e){alert(e.message)}}
+function renderChats(){let q=$("search").value.toLowerCase();$("chatlist").innerHTML=chats.filter(c=>(c.phone||"").includes(q)).map((c,i)=>`<div class="contact ${i==active?"active":""}" onclick="openChat(${i})"><b>${c.name||c.phone}</b><div>${c.phone}</div></div>`).join("")}
+function openChat(i){active=i;let c=chats[i];$("head").innerText=(c.name||"Client")+" • "+c.phone;$("msgs").innerHTML=(c.messages||[]).map(m=>`<div class="msg ${m.direction=="agent"?"agent":"client"}">${esc(m.text||"")}<small>${m.time?new Date(m.time).toLocaleString():""}</small></div>`).join("")||"No messages";renderChats()}
+async function reply(){if(active<0)return alert("Select a client");let t=$("reply").value.trim();if(!t)return;try{let r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({to:chats[active].phone,message:t})}),j=await r.json();if(!r.ok)throw Error(JSON.stringify(j));$("reply").value="";await loadChats()}catch(e){alert(e.message)}}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+render();
+</script></body></html>
